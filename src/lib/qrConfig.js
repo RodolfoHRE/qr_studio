@@ -1,45 +1,68 @@
-// Monta o objeto de configuração que será passado ao qr-code-styling.
-//
-// STUB (commit 1): por enquanto só deriva uma string de dados básica a partir
-// do conteúdo e devolve dimensões/cores. O encoding real por tipo
-// (WIFI:..., mailto:..., vCard, etc.) e a geração de QR de verdade entram no
-// próximo commit junto com a biblioteca qr-code-styling.
+// Monta o objeto de configuração passado ao qr-code-styling, incluindo o
+// encoding da string de dados conforme o tipo de conteúdo.
+
+// Escapa caracteres especiais do formato Wi-Fi (\ ; , " :).
+function escapeWifi(value) {
+  return String(value).replace(/([\\;,":])/g, '\\$1')
+}
+
+function encodeWifi(wifi) {
+  if (!wifi?.ssid) return ''
+  const encryption = wifi.encryption || 'WPA'
+  const password = wifi.password || ''
+  return `WIFI:T:${encryption};S:${escapeWifi(wifi.ssid)};P:${escapeWifi(password)};;`
+}
+
+function encodeEmail(email) {
+  if (!email?.to) return ''
+  const params = []
+  if (email.subject) params.push(`subject=${encodeURIComponent(email.subject)}`)
+  if (email.body) params.push(`body=${encodeURIComponent(email.body)}`)
+  const query = params.length ? `?${params.join('&')}` : ''
+  return `mailto:${email.to}${query}`
+}
+
+function encodeVcard(vcard) {
+  if (!vcard?.name) return ''
+  const lines = ['BEGIN:VCARD', 'VERSION:3.0', `FN:${vcard.name}`]
+  if (vcard.company) lines.push(`ORG:${vcard.company}`)
+  if (vcard.phone) lines.push(`TEL:${vcard.phone}`)
+  if (vcard.email) lines.push(`EMAIL:${vcard.email}`)
+  lines.push('END:VCARD')
+  return lines.join('\n')
+}
 
 /**
- * Deriva a string de dados que será codificada no QR a partir do conteúdo.
- * @param {string} contentType - 'url' | 'text' | 'wifi' | 'email' | 'vcard'
- * @param {object} content - estado de conteúdo (campos por tipo)
- * @returns {string}
+ * Deriva a string de dados que será codificada no QR.
+ * Retorna '' quando o campo principal do tipo está vazio (estado vazio).
  */
-function deriveData(contentType, content) {
+export function deriveData(contentType, content) {
   switch (contentType) {
     case 'url':
       return content.url ?? ''
     case 'text':
       return content.text ?? ''
     case 'wifi':
-      return content.wifi?.ssid ?? ''
+      return encodeWifi(content.wifi)
     case 'email':
-      return content.email?.to ?? ''
+      return encodeEmail(content.email)
     case 'vcard':
-      return content.vcard?.name ?? ''
+      return encodeVcard(content.vcard)
     default:
       return ''
   }
 }
 
 /**
- * Constrói o objeto de config (placeholder por enquanto).
- * @param {string} contentType
- * @param {object} content
- * @param {object} style
- * @returns {object}
+ * Constrói o objeto de config do qr-code-styling.
  */
 export function buildQrConfig(contentType, content, style) {
   return {
-    data: deriveData(contentType, content),
+    type: 'canvas',
     width: style.size,
     height: style.size,
+    data: deriveData(contentType, content),
+    margin: 8,
     dotsOptions: {
       type: style.dotsType,
       color: style.dotsColor,

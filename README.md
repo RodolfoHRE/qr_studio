@@ -27,19 +27,20 @@ Tauri virá em uma fase posterior.
 
 Tipos de conteúdo:
 
-- [ ] URL
-- [ ] Texto livre
-- [ ] Wi-Fi
-- [ ] E-mail (com assunto e corpo)
-- [ ] Contato (vCard)
+- [x] URL
+- [x] Texto livre
+- [x] Wi-Fi
+- [x] E-mail (com assunto e corpo)
+- [x] Contato (vCard)
 
 Customização:
 
+- [x] Cor dos pontos e do fundo
+- [x] Tamanho do QR (150–400px)
 - [ ] Estilo dos pontos e das esquinas
-- [ ] Cores independentes (pontos, fundo, esquinas)
+- [ ] Cores das esquinas (independentes)
 - [ ] Gradiente linear
 - [ ] Logo central com tamanho ajustável
-- [ ] Tamanho do QR (150–400px)
 
 Export:
 

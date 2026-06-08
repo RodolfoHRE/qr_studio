@@ -18,6 +18,16 @@ export default function StylePanel({ style, setStyle }) {
       </label>
 
       <label className="field">
+        <span className="field__label">Cor do fundo</span>
+        <input
+          type="color"
+          className="field__color"
+          value={style.bgColor}
+          onChange={(e) => setStyle({ ...style, bgColor: e.target.value })}
+        />
+      </label>
+
+      <label className="field">
         <span className="field__label">Tamanho: {style.size}px</span>
         <input
           type="range"
