@@ -1,6 +1,6 @@
 <div align="center">
 
-# QR Studio
+<img src="src/img/png/qr_studio_logo_readme.png" alt="QR Studio" width="360" />
 
 **Gerador de QR codes customizáveis — desktop, com interface web.**
 
@@ -22,6 +22,9 @@ sem precisar instalar Node, Python ou qualquer dependência.
 🚧 **Em desenvolvimento.** Construído de forma incremental. Atualmente em fase
 **web-first** (React + Vite, roda no navegador). O empacotamento desktop com
 Tauri virá em uma fase posterior.
+
+A identidade visual já está aplicada: paleta azul-profundo → teal, tema escuro
+por padrão com alternância para o claro, e preview do QR em tempo real.
 
 ## Funcionalidades
 
@@ -46,6 +49,12 @@ Export:
 
 - [ ] Download em PNG
 - [ ] Download em SVG
+
+Interface:
+
+- [x] Identidade visual (paleta da marca, logo)
+- [x] Tema escuro / claro com alternância
+- [x] Preview em tempo real (debounce ~300ms)
 
 > A estrutura base e o fluxo de estado já estão prontos. As funcionalidades acima
 > serão marcadas conforme forem implementadas.

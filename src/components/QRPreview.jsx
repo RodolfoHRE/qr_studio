@@ -33,12 +33,19 @@ export default function QRPreview({ contentType, content, style }) {
   }, [config, isEmpty])
 
   return (
-    <section className="preview">
-      <h2 className="panel__title">Preview</h2>
+    <section className="preview" aria-label="Pré-visualização do QR code">
       <div className="preview__stage">
         {isEmpty && (
           <div className="preview__empty">
-            Preencha o conteúdo para gerar o QR code.
+            <svg className="preview__glyph" viewBox="0 0 48 48" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M6 6h14v14H6V6Zm3 3v8h8V9H9Zm19-3h14v14H28V6Zm3 3v8h8V9h-8ZM6 28h14v14H6V28Zm3 3v8h8v-8H9Zm19-3h5v5h-5v-5Zm9 0h5v5h-5v-5Zm-9 9h5v5h-5v-5Zm9 0h5v5h-5v-5Zm-4-4h4v4h-4v-4Z"
+              />
+            </svg>
+            <p className="preview__empty-text">
+              Preencha o conteúdo para gerar o QR code.
+            </p>
           </div>
         )}
         <div
