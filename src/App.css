@@ -345,6 +345,122 @@ input[type='range'] {
   }
 }
 
+/* ---- field variantes ---- */
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.field--inline input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.9rem;
+  margin-bottom: 0.9rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.field-group .field:last-child {
+  margin-bottom: 0;
+}
+
+input[type='file'] {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+input[type='file']::file-selector-button {
+  margin-right: 0.7rem;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+input[type='file']::file-selector-button:hover {
+  background: var(--surface-hover);
+}
+
+/* ---- export ---- */
+.export {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.export__name {
+  margin-bottom: 0.9rem;
+}
+
+.export__buttons {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: oklch(0.98 0.01 260);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: filter var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--ghost {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  filter: none;
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
 /* ---- responsivo ---- */
 @media (max-width: 860px) {
   .app__main {

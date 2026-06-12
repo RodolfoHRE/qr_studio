@@ -21,8 +21,10 @@ const DEFAULT_STYLE = {
   dotsColor: '#172E7C',
   bgColor: '#ffffff',
   cornersSquareType: 'square',
+  cornersSquareColor: '#172E7C',
   cornersDotType: 'square',
-  gradient: null,
+  cornersDotColor: '#172E7C',
+  gradient: null, // objeto { from, to, rotation } quando ligado, senão cor sólida
   logo: null,
   logoSize: 0.3,
   size: 300,

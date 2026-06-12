@@ -53,28 +53,67 @@ export function deriveData(contentType, content) {
   }
 }
 
+// Monta as opções dos pontos: gradiente linear quando style.gradient está
+// definido, senão cor sólida (comportamento original). Ângulo vem em graus no
+// estado e é convertido para radianos aqui.
+function dotsOptions(style) {
+  if (style.gradient) {
+    return {
+      type: style.dotsType,
+      gradient: {
+        type: 'linear',
+        rotation: ((style.gradient.rotation || 0) * Math.PI) / 180,
+        colorStops: [
+          { offset: 0, color: style.gradient.from },
+          { offset: 1, color: style.gradient.to },
+        ],
+      },
+    }
+  }
+  return {
+    type: style.dotsType,
+    color: style.dotsColor,
+  }
+}
+
 /**
  * Constrói o objeto de config do qr-code-styling.
  */
 export function buildQrConfig(contentType, content, style) {
-  return {
+  const config = {
     type: 'canvas',
     width: style.size,
     height: style.size,
     data: deriveData(contentType, content),
     margin: 8,
-    dotsOptions: {
-      type: style.dotsType,
-      color: style.dotsColor,
+    // Logo presente força correção de erro máxima (H) para o QR continuar
+    // legível com a imagem central cobrindo parte dos dados.
+    qrOptions: {
+      errorCorrectionLevel: style.logo ? 'H' : 'M',
     },
+    dotsOptions: dotsOptions(style),
     backgroundOptions: {
       color: style.bgColor,
     },
     cornersSquareOptions: {
       type: style.cornersSquareType,
+      color: style.cornersSquareColor,
     },
     cornersDotOptions: {
       type: style.cornersDotType,
+      color: style.cornersDotColor,
     },
   }
+
+  if (style.logo) {
+    config.image = style.logo
+    config.imageOptions = {
+      crossOrigin: 'anonymous',
+      margin: 4,
+      imageSize: style.logoSize,
+      hideBackgroundDots: true,
+    }
+  }
+
+  return config
 }
