@@ -1,0 +1,8 @@
+# Toolchain pinada para reprodutibilidade (local + CI release.yml).
+# Nota: o blocker do build NÃO era o rustc — era o crate `time` 0.3.48
+# (time-macros 0.2.28), release quebrada que dispara E0119 (conflito espúrio
+# de coherence) em cookie/plist/tauri-utils sob qualquer rustc 1.93–1.96.
+# Correção real: Cargo.lock fixa time = 0.3.47. NÃO rodar `cargo update -p time`.
+[toolchain]
+channel = "1.95.0"
+profile = "minimal"
