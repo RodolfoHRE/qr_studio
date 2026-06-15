@@ -4,7 +4,6 @@
 
 **Gerador de QR codes customizáveis — desktop, com interface web.**
 
-[![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)](#status)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6-646cff?logo=vite&logoColor=white)](https://vite.dev)
@@ -17,16 +16,8 @@ Crie QR codes personalizados — escolha o tipo de conteúdo, ajuste cores e est
 e exporte em PNG ou SVG. Distribuído como aplicativo desktop para Windows e Linux,
 sem precisar instalar Node, Python ou qualquer dependência.
 
-## Status
-
-🚧 **Em desenvolvimento.** Construído de forma incremental. O app web está
-completo (React + Vite): os cinco tipos de conteúdo, estilização avançada e
-exportação PNG/SVG já funcionam. O empacotamento desktop com **Tauri v2** já
-está integrado; a primeira release com binários sai via GitHub Actions ao
-publicar uma tag `v*`.
-
-A identidade visual já está aplicada: paleta azul-profundo → teal, tema escuro
-por padrão com alternância para o claro, e preview do QR em tempo real.
+👉 **[Baixe agora na página oficial](https://rodolfohre.github.io/qr_studio/)** ou
+direto nas [Releases](https://github.com/RodolfoHRE/qr_studio/releases/latest).
 
 ## Funcionalidades
 
@@ -54,12 +45,9 @@ Export:
 
 Interface:
 
-- [x] Identidade visual (paleta da marca, logo)
+- [x] Identidade visual (paleta azul-profundo → teal, logo)
 - [x] Tema escuro / claro com alternância
 - [x] Preview em tempo real (debounce ~300ms)
-
-> A estrutura base e o fluxo de estado já estão prontos. As funcionalidades acima
-> serão marcadas conforme forem implementadas.
 
 ## Stack
 
@@ -84,16 +72,15 @@ A aplicação abre em `http://localhost:5173`.
 
 ## Download
 
-Instaladores para Windows (`.exe`) e Linux (`.AppImage` e `.deb`) são publicados
-em [Releases](https://github.com/RodolfoHRE/qr_studio/releases/latest), gerados
-pelo GitHub Actions a cada tag `v*`. A página de download fica em `docs/`
-(GitHub Pages): **Settings → Pages → Deploy from branch → `main` → `/docs`**.
+Baixe o instalador para o seu sistema na
+**[página oficial](https://rodolfohre.github.io/qr_studio/)** ou direto nas
+[Releases](https://github.com/RodolfoHRE/qr_studio/releases/latest):
 
-Publicar uma versão:
+- **Windows** — `.exe` (instalador NSIS)
+- **Linux** — `.AppImage` e `.deb`
 
-```bash
-git tag v0.1.0 && git push origin v0.1.0
-```
+Os binários são gerados automaticamente pelo GitHub Actions. Nenhuma dependência
+de runtime — instale e use.
 
 ## Licença
 
