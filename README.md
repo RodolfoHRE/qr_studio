@@ -19,9 +19,11 @@ sem precisar instalar Node, Python ou qualquer dependência.
 
 ## Status
 
-🚧 **Em desenvolvimento.** Construído de forma incremental. Atualmente em fase
-**web-first** (React + Vite, roda no navegador). O empacotamento desktop com
-Tauri virá em uma fase posterior.
+🚧 **Em desenvolvimento.** Construído de forma incremental. O app web está
+completo (React + Vite): os cinco tipos de conteúdo, estilização avançada e
+exportação PNG/SVG já funcionam. O empacotamento desktop com **Tauri v2** já
+está integrado; a primeira release com binários sai via GitHub Actions ao
+publicar uma tag `v*`.
 
 A identidade visual já está aplicada: paleta azul-profundo → teal, tema escuro
 por padrão com alternância para o claro, e preview do QR em tempo real.
@@ -40,15 +42,15 @@ Customização:
 
 - [x] Cor dos pontos e do fundo
 - [x] Tamanho do QR (150–400px)
-- [ ] Estilo dos pontos e das esquinas
-- [ ] Cores das esquinas (independentes)
-- [ ] Gradiente linear
-- [ ] Logo central com tamanho ajustável
+- [x] Estilo dos pontos e das esquinas
+- [x] Cores das esquinas (independentes)
+- [x] Gradiente linear
+- [x] Logo central com tamanho ajustável
 
 Export:
 
-- [ ] Download em PNG
-- [ ] Download em SVG
+- [x] Download em PNG
+- [x] Download em SVG
 
 Interface:
 
@@ -65,7 +67,7 @@ Interface:
 | ---------- | --------------------- |
 | Frontend   | React + Vite          |
 | Geração QR | `qr-code-styling`     |
-| Desktop    | Tauri v2 *(planejado)*|
+| Desktop    | Tauri v2              |
 
 ## Rodar localmente
 
@@ -82,8 +84,16 @@ A aplicação abre em `http://localhost:5173`.
 
 ## Download
 
-Os instaladores para Windows e Linux serão disponibilizados via GitHub Releases
-assim que o empacotamento desktop estiver pronto.
+Instaladores para Windows (`.exe`) e Linux (`.AppImage` e `.deb`) são publicados
+em [Releases](https://github.com/RodolfoHRE/qr_studio/releases/latest), gerados
+pelo GitHub Actions a cada tag `v*`. A página de download fica em `docs/`
+(GitHub Pages): **Settings → Pages → Deploy from branch → `main` → `/docs`**.
+
+Publicar uma versão:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
 
 ## Licença
 

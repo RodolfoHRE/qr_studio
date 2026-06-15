@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Studio — gerador de QR codes para desktop</title>
+  <meta name="description" content="QR Studio: gerador de QR codes para desktop. URL, Wi-Fi, contato, e-mail e texto. Estilos, cores, gradiente e logo. Exporta PNG e SVG. 100% offline." />
+  <meta name="theme-color" content="#0D1529" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="QR Studio" />
+  <meta property="og:description" content="Gerador de QR codes para desktop. Estilize, adicione logo e exporte PNG/SVG. 100% offline." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiko:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Tokens espelham src/App.css (tema escuro). Marca: azul-profundo -> teal.
+       OKLCH, neutros tingidos, teal como único realce. Sem neon, sem gradiente
+       em texto. Página fixa no tema escuro (identidade da marca). */
+    :root {
+      --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-brand: 'Amiko', var(--font-ui);
+      --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --t-fast: 140ms;
+      --t-med: 240ms;
+
+      --primary: oklch(0.42 0.16 268);
+      --secondary: oklch(0.5 0.14 248);
+
+      --bg-from: oklch(0.19 0.04 266);
+      --bg-to: oklch(0.24 0.05 262);
+      --surface: oklch(0.26 0.038 262);
+      --surface-2: oklch(0.3 0.04 261);
+      --surface-hover: oklch(0.33 0.045 261);
+      --border: oklch(0.36 0.04 260 / 0.7);
+      --border-strong: oklch(0.44 0.05 260);
+      --text: oklch(0.95 0.012 260);
+      --text-muted: oklch(0.72 0.025 258);
+      --text-faint: oklch(0.6 0.03 258);
+      --accent: oklch(0.7 0.13 195);
+      --accent-quiet: oklch(0.64 0.1 195);
+      --ring: oklch(0.62 0.14 255 / 0.55);
+      --stage-frame: oklch(0.16 0.035 266);
+
+      --maxw: 1120px;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: var(--font-ui);
+      color: var(--text);
+      line-height: 1.55;
+      background:
+        radial-gradient(120% 75% at 85% -12%, oklch(0.5 0.13 248 / 0.22), transparent 58%),
+        radial-gradient(90% 60% at 8% 4%, oklch(0.59 0.11 195 / 0.1), transparent 55%),
+        linear-gradient(155deg, var(--bg-from), var(--bg-to));
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img, svg { display: block; max-width: 100%; }
+
+    .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: 24px; }
+
+    /* ---------- nav ---------- */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid transparent;
+      transition: background var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out);
+    }
+    .nav[data-stuck='true'] {
+      background: oklch(0.19 0.04 266 / 0.72);
+      backdrop-filter: blur(12px);
+      border-bottom-color: var(--border);
+    }
+    .nav__row { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 24px; }
+    .nav__logo { height: 34px; width: auto; }
+    .nav__links { display: flex; align-items: center; gap: 28px; }
+    .nav__links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color var(--t-fast) var(--ease-out); }
+    .nav__links a:hover { color: var(--text); }
+    .nav__cta { color: var(--text) !important; }
+    @media (max-width: 720px) { .nav__links a:not(.nav__cta) { display: none; } }
+
+    /* ---------- buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      font: inherit; font-weight: 600; font-size: 15px;
+      padding: 12px 22px; border-radius: var(--radius-md);
+      border: 1px solid transparent; cursor: pointer;
+      transition: transform var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn--primary {
+      color: oklch(0.97 0.01 260);
+      background: linear-gradient(120deg, var(--primary), var(--accent-quiet));
+      background-clip: padding-box;
+      box-shadow: 0 14px 34px -16px oklch(0.42 0.16 268 / 0.9);
+    }
+    .btn--primary:hover { filter: brightness(1.08); }
+    .btn--ghost {
+      color: var(--text); background: var(--surface-2);
+      border-color: var(--border-strong);
+    }
+    .btn--ghost:hover { background: var(--surface-hover); }
+    .btn svg { width: 18px; height: 18px; }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); margin: 0 0 18px;
+    }
+    .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+
+    /* ---------- hero ---------- */
+    .hero { padding: clamp(48px, 8vw, 104px) 0 clamp(40px, 6vw, 80px); }
+    .hero__grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+    .hero h1 {
+      font-family: var(--font-brand); font-weight: 700;
+      font-size: clamp(36px, 5.4vw, 60px); line-height: 1.04; letter-spacing: -0.02em;
+      margin: 0 0 20px;
+    }
+    .hero h1 .teal { color: var(--accent); }
+    .hero__sub { font-size: clamp(16px, 1.6vw, 19px); color: var(--text-muted); max-width: 52ch; margin: 0 0 32px; }
+    .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+    .hero__os-note { font-size: 13px; color: var(--text-faint); margin: 16px 0 0; }
+    .hero__os-note a { color: var(--text-muted); border-bottom: 1px solid var(--border-strong); }
+    .hero__trust { display: flex; flex-wrap: wrap; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .hero__trust div { font-size: 13.5px; color: var(--text-muted); padding-inline: 26px; }
+    .hero__trust div:first-child { padding-left: 0; }
+    .hero__trust div + div { border-left: 1px solid var(--border); }
+    .hero__trust strong { display: block; font-family: var(--font-brand); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+
+    /* QR stage (espelha o preview do app) */
+    .stage {
+      position: relative; justify-self: center;
+      padding: 26px; border-radius: var(--radius-xl);
+      background: radial-gradient(120% 120% at 50% 0%, var(--surface), var(--stage-frame));
+      border: 1px solid var(--border);
+      box-shadow: 0 40px 90px -40px oklch(0.1 0.04 266 / 0.9);
+    }
+    .stage__card {
+      background: oklch(0.99 0.004 250); border-radius: var(--radius-lg);
+      padding: 22px; display: grid; place-items: center;
+      width: min(320px, 70vw); aspect-ratio: 1;
+    }
+    .stage__card canvas, .stage__card svg { width: 100% !important; height: auto !important; }
+    .stage__caption { margin: 18px 2px 2px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 9px; }
+    .stage__caption svg { width: 16px; height: 16px; color: var(--accent); }
+    .stage__pill {
+      position: absolute; top: -14px; right: 22px;
+      font-family: var(--font-mono); font-size: 11.5px; color: var(--accent);
+      background: var(--stage-frame); border: 1px solid var(--border-strong);
+      padding: 5px 12px; border-radius: 999px;
+    }
+
+    @media (max-width: 880px) {
+      .hero__grid { grid-template-columns: 1fr; }
+      .stage { order: -1; }
+    }
+
+    /* ---------- section heads ---------- */
+    section { scroll-margin-top: 80px; }
+    .head { max-width: 56ch; margin-bottom: clamp(36px, 5vw, 56px); }
+    .head h2 { font-family: var(--font-brand); font-weight: 700; font-size: clamp(27px, 3.6vw, 38px); letter-spacing: -0.02em; margin: 0 0 14px; }
+    .head p { color: var(--text-muted); font-size: 17px; margin: 0; }
+
+    /* ---------- formats: linha editorial, não card-grid ---------- */
+    .formats { padding: clamp(56px, 8vw, 96px) 0; }
+    .formats__list { display: grid; gap: 0; border-top: 1px solid var(--border); }
+    .fmt {
+      display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 22px;
+      padding: 22px 8px; border-bottom: 1px solid var(--border);
+      transition: background var(--t-fast) var(--ease-out);
+    }
+    .fmt:hover { background: oklch(0.3 0.04 261 / 0.4); }
+    .fmt__glyph {
+      width: 48px; height: 48px; border-radius: var(--radius-md);
+      display: grid; place-items: center; color: var(--accent);
+      background: oklch(0.59 0.11 195 / 0.12); border: 1px solid oklch(0.59 0.11 195 / 0.25);
+    }
+    .fmt__glyph svg { width: 24px; height: 24px; }
+    .fmt__name { font-weight: 600; font-size: 17px; }
+    .fmt__desc { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+    .fmt__code { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-faint); white-space: nowrap; }
+    @media (max-width: 720px) { .fmt { grid-template-columns: 48px 1fr; } .fmt__code { display: none; } }
+
+    /* ---------- capabilities (estilo + export) ---------- */
+    .caps { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 44px; }
+    .cap { padding: 28px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); }
+    .cap h3 { font-size: 19px; margin: 0 0 8px; }
+    .cap p { color: var(--text-muted); font-size: 14.5px; margin: 0; }
+    .cap__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .tag { font-size: 12.5px; color: var(--text-muted); padding: 5px 11px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); }
+    @media (max-width: 640px) { .caps { grid-template-columns: 1fr; } }
+
+    /* ---------- app mock ---------- */
+    .preview { padding: clamp(56px, 8vw, 96px) 0; }
+    .mock {
+      border-radius: var(--radius-xl); overflow: hidden;
+      border: 1px solid var(--border-strong);
+      background: linear-gradient(155deg, var(--bg-from), var(--bg-to));
+      box-shadow: 0 50px 110px -50px oklch(0.1 0.04 266 / 0.95);
+    }
+    .mock__bar { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: oklch(0.22 0.04 264 / 0.6); }
+    .mock__dots { display: flex; gap: 7px; }
+    .mock__dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--border-strong); }
+    .mock__logo { height: 24px; width: auto; }
+    .mock__toggle { margin-left: auto; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--border); color: var(--accent); font-size: 14px; }
+    .mock__body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 28px; }
+    .mock__tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+    .mock__tab { font-size: 13px; padding: 7px 13px; border-radius: 8px; color: var(--text-muted); }
+    .mock__tab--on { color: var(--text); background: var(--surface-2); border: 1px solid var(--border); }
+    .mock__field { height: 40px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); margin-bottom: 12px; }
+    .mock__field--label { height: 12px; width: 90px; background: var(--surface); border: none; margin-bottom: 8px; border-radius: 4px; }
+    .mock__row { display: flex; gap: 12px; }
+    .mock__row .mock__field { flex: 1; }
+    .mock__swatch { width: 40px; flex: none !important; }
+    .mock__stage { display: grid; place-items: center; border-radius: var(--radius-lg); background: radial-gradient(120% 120% at 50% 0%, var(--surface), var(--stage-frame)); border: 1px solid var(--border); padding: 22px; }
+    .mock__qr { background: oklch(0.99 0.004 250); border-radius: 12px; padding: 16px; width: min(220px, 40vw); }
+    .mock__qr svg, .mock__qr canvas { width: 100% !important; height: auto !important; }
+    @media (max-width: 720px) { .mock__body { grid-template-columns: 1fr; } }
+
+    /* ---------- download ---------- */
+    .download { padding: clamp(56px, 8vw, 96px) 0; }
+    .dl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .dl {
+      padding: 26px; border-radius: var(--radius-lg);
+      background: var(--surface); border: 1px solid var(--border);
+      transition: border-color var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), background var(--t-med) var(--ease-out);
+    }
+    .dl[data-current='true'] { border-color: var(--accent); background: linear-gradient(160deg, var(--surface), oklch(0.59 0.11 195 / 0.08)); transform: translateY(-4px); }
+    .dl__os { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .dl__os svg { width: 26px; height: 26px; color: var(--text); }
+    .dl__os h3 { font-size: 19px; margin: 0; }
+    .dl__badge { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+    .dl__file { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-faint); margin: 6px 0 18px; }
+    .dl .btn { width: 100%; justify-content: center; }
+    .dl--soon { opacity: 0.62; }
+    .dl--soon .btn { background: var(--surface-2); color: var(--text-muted); cursor: not-allowed; border-color: var(--border); }
+    @media (max-width: 760px) { .dl-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- footer ---------- */
+    footer { border-top: 1px solid var(--border); padding: 44px 0; margin-top: clamp(40px, 6vw, 72px); }
+    .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
+    .foot__brand { display: flex; align-items: center; gap: 12px; }
+    .foot__brand img { height: 30px; }
+    .foot__brand span { font-size: 13px; color: var(--text-faint); }
+    .foot__links { display: flex; flex-wrap: wrap; gap: 22px; font-size: 14px; }
+    .foot__links a { color: var(--text-muted); transition: color var(--t-fast) var(--ease-out); }
+    .foot__links a:hover { color: var(--text); }
+
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+    .reveal.is-in { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="wrap nav__row">
+      <a href="#top" aria-label="QR Studio"><img class="nav__logo" src="assets/logo.svg" alt="QR Studio" /></a>
+      <div class="nav__links">
+        <a href="#formatos">Formatos</a>
+        <a href="#app">O app</a>
+        <a href="#download">Download</a>
+        <a class="nav__cta" href="https://github.com/RodolfoHRE/qr_studio" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero" id="top">
+    <div class="wrap hero__grid">
+      <div>
+        <p class="eyebrow">Desktop · Windows &amp; Linux</p>
+        <h1>QR codes que parecem <span class="teal">feitos à mão.</span></h1>
+        <p class="hero__sub">
+          Gere, estilize e exporte QR codes no seu desktop. Link, Wi-Fi, contato, e-mail ou texto;
+          cores, gradiente e logo no centro. Tudo offline, nada sai da sua máquina.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" id="primaryDownload" href="https://github.com/RodolfoHRE/qr_studio/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>
+            <span id="primaryLabel">Baixar última versão</span>
+          </a>
+          <a class="btn btn--ghost" href="#download">Ver todas as opções</a>
+        </div>
+        <p class="hero__os-note" id="osNote">Detectando seu sistema… <a href="#download">ver todos os downloads</a></p>
+
+        <div class="hero__trust">
+          <div><strong>5</strong> tipos de conteúdo</div>
+          <div><strong>PNG · SVG</strong> exportação</div>
+          <div><strong>100%</strong> offline, sem conta</div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <span class="stage__pill">scan me</span>
+        <div class="stage__card"><div id="heroQr"></div></div>
+        <p class="stage__caption">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+          Aponte a câmera: este QR foi feito no QR Studio.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- FORMATOS -->
+  <main>
+  <section class="formats wrap" id="formatos">
+    <div class="head reveal">
+      <h2>Um app, cinco formatos.</h2>
+      <p>Cada tipo de conteúdo é codificado no padrão certo: nada de gerar um link torto que o leitor não entende.</p>
+    </div>
+
+    <div class="formats__list reveal">
+      <div class="fmt">
+        <div class="fmt__glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div>
+        <div><div class="fmt__name">URL</div><div class="fmt__desc">Qualquer endereço web, pronto pra escanear e abrir.</div></div>
+        <div class="fmt__code">https://…</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M1.5 9a16 16 0 0 1 21 0"/><path d="M8.5 16a6 6 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+        <div><div class="fmt__name">Wi-Fi</div><div class="fmt__desc">SSID, senha e segurança. Conecta sem digitar nada.</div></div>
+        <div class="fmt__code">WIFI:T:WPA;S:…</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></div>
+        <div><div class="fmt__name">Contato (vCard)</div><div class="fmt__desc">Nome, telefone, e-mail e empresa num só código.</div></div>
+        <div class="fmt__code">BEGIN:VCARD…</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></div>
+        <div><div class="fmt__name">E-mail</div><div class="fmt__desc">Destinatário, assunto e corpo já preenchidos.</div></div>
+        <div class="fmt__code">mailto:…?subject=</div>
+      </div>
+      <div class="fmt">
+        <div class="fmt__glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6M12 4v16"/></svg></div>
+        <div><div class="fmt__name">Texto livre</div><div class="fmt__desc">Qualquer mensagem, código ou nota que precise virar QR.</div></div>
+        <div class="fmt__code">texto puro</div>
+      </div>
+    </div>
+
+    <div class="caps reveal">
+      <div class="cap">
+        <h3>Estilo sob seu controle</h3>
+        <p>Formato dos pontos e dos cantos, cores independentes, gradiente linear e logo no centro, com correção de erro elevada automaticamente pra continuar legível.</p>
+        <div class="cap__tags">
+          <span class="tag">Pontos &amp; cantos</span>
+          <span class="tag">Cores independentes</span>
+          <span class="tag">Gradiente linear</span>
+          <span class="tag">Logo central</span>
+        </div>
+      </div>
+      <div class="cap">
+        <h3>Exporta limpo</h3>
+        <p>Baixe em PNG pra usar em qualquer lugar ou em SVG vetorial pra impressão em qualquer tamanho, sem perder nitidez. Preview ao vivo enquanto você ajusta.</p>
+        <div class="cap__tags">
+          <span class="tag">PNG</span>
+          <span class="tag">SVG vetorial</span>
+          <span class="tag">Preview ao vivo</span>
+          <span class="tag">Tamanho ajustável</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP MOCK -->
+  <section class="preview wrap" id="app">
+    <div class="head reveal">
+      <h2>Feito pra fluir.</h2>
+      <p>Painel de controles à esquerda, preview ao vivo à direita. Digite, estilize, exporte. Em menos de um minuto.</p>
+    </div>
+
+    <div class="mock reveal" aria-hidden="true">
+      <div class="mock__bar">
+        <div class="mock__dots"><i></i><i></i><i></i></div>
+        <img class="mock__logo" src="assets/logo.svg" alt="" />
+        <div class="mock__toggle">☾</div>
+      </div>
+      <div class="mock__body">
+        <div>
+          <div class="mock__tabs">
+            <span class="mock__tab mock__tab--on">URL</span>
+            <span class="mock__tab">Wi-Fi</span>
+            <span class="mock__tab">Contato</span>
+            <span class="mock__tab">E-mail</span>
+            <span class="mock__tab">Texto</span>
+          </div>
+          <div class="mock__field mock__field--label"></div>
+          <div class="mock__field"></div>
+          <div class="mock__field mock__field--label"></div>
+          <div class="mock__row">
+            <div class="mock__field mock__swatch"></div>
+            <div class="mock__field mock__swatch"></div>
+            <div class="mock__field"></div>
+          </div>
+          <div class="mock__field mock__field--label"></div>
+          <div class="mock__field"></div>
+        </div>
+        <div class="mock__stage">
+          <div class="mock__qr"><div id="mockQr"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section class="download wrap" id="download">
+    <div class="head reveal">
+      <h2>Baixe e use.</h2>
+      <p>Binário pronto, sem Node nem Rust. Os botões abrem a release mais recente; escolha o arquivo do seu sistema.</p>
+    </div>
+
+    <div class="dl-grid reveal">
+      <div class="dl" id="dl-windows">
+        <div class="dl__os">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.5v7H3v-6Zm0 7H10.5v7L3 18.5v-6Zm8.5-8.2L21 3v8.5h-9.5v-7.2Zm0 8.2H21V21l-9.5-1.3v-7Z"/></svg>
+          <h3>Windows</h3>
+        </div>
+        <div class="dl__badge">Instalador 64-bit</div>
+        <p class="dl__file">QR-Studio_x64-setup.exe</p>
+        <a class="btn btn--primary" href="https://github.com/RodolfoHRE/qr_studio/releases/latest" target="_blank" rel="noopener">Baixar para Windows</a>
+      </div>
+
+      <div class="dl" id="dl-linux">
+        <div class="dl__os">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-1 1.5-1 4 0 6-1.5 1.5-3 4-3 7 0 2 1.5 3 6 3s6-1 6-3c0-3-1.5-5.5-3-7 1-2 1-4.5 0-6"/><path d="M10 7h.01M14 7h.01"/></svg>
+          <h3>Linux</h3>
+        </div>
+        <div class="dl__badge">AppImage &amp; .deb</div>
+        <p class="dl__file">qr-studio_amd64.AppImage · .deb</p>
+        <a class="btn btn--primary" href="https://github.com/RodolfoHRE/qr_studio/releases/latest" target="_blank" rel="noopener">Baixar para Linux</a>
+      </div>
+
+      <div class="dl dl--soon" id="dl-macos">
+        <div class="dl__os">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3c0 1.5-1.3 3-3 3 0-1.6 1.4-3 3-3Zm3 14c-.6 1.4-1.4 2.8-2.6 2.8-1 0-1.4-.7-2.6-.7s-1.6.7-2.6.7C8.4 19.8 7 17 7 14.4c0-2.7 1.8-4.1 3.5-4.1 1 0 1.9.7 2.5.7.6 0 1.6-.8 2.8-.7.9 0 2.1.4 2.8 1.6-2.4 1.4-2 4.6.4 5.1Z"/></svg>
+          <h3>macOS</h3>
+        </div>
+        <div class="dl__badge">Fora de escopo</div>
+        <p class="dl__file">sem build para macOS</p>
+        <span class="btn" aria-disabled="true">Não disponível</span>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap foot">
+      <div class="foot__brand">
+        <img src="assets/logo.svg" alt="QR Studio" />
+        <span>Feito com Tauri + React · MIT</span>
+      </div>
+      <div class="foot__links">
+        <a href="https://github.com/RodolfoHRE/qr_studio" target="_blank" rel="noopener">Repositório</a>
+        <a href="https://github.com/RodolfoHRE/qr_studio/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/RodolfoHRE/qr_studio/issues" target="_blank" rel="noopener">Reportar bug</a>
+        <a href="https://github.com/RodolfoHRE/qr_studio/blob/main/LICENSE" target="_blank" rel="noopener">Licença</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
+  <script>
+    (function () {
+      var REPO = 'https://github.com/RodolfoHRE/qr_studio';
+
+      // ---- QR herói (saída real do produto, estilizado na marca) ----
+      function makeQr(target, size) {
+        if (typeof QRCodeStyling === 'undefined' || !target) return;
+        var qr = new QRCodeStyling({
+          width: size, height: size, type: 'svg', data: REPO, margin: 6,
+          qrOptions: { errorCorrectionLevel: 'Q' },
+          dotsOptions: {
+            type: 'rounded',
+            gradient: { type: 'linear', rotation: 0.8, colorStops: [
+              { offset: 0, color: '#172E7C' }, { offset: 1, color: '#018989' } ] }
+          },
+          cornersSquareOptions: { type: 'extra-rounded', color: '#172E7C' },
+          cornersDotOptions: { type: 'dot', color: '#018989' },
+          backgroundOptions: { color: 'transparent' }
+        });
+        qr.append(target);
+      }
+      makeQr(document.getElementById('heroQr'), 280);
+      makeQr(document.getElementById('mockQr'), 200);
+
+      // ---- detecção de SO: destaca o card e ajusta o botão do hero ----
+      function detectOS() {
+        var d = navigator.userAgentData && navigator.userAgentData.platform;
+        var p = (d || navigator.platform || navigator.userAgent || '').toLowerCase();
+        if (p.indexOf('win') > -1) return 'windows';
+        if (p.indexOf('mac') > -1) return 'macos';
+        if (p.indexOf('linux') > -1 || p.indexOf('x11') > -1 || p.indexOf('android') > -1) return 'linux';
+        return null;
+      }
+      var os = detectOS();
+      var labels = { windows: 'Baixar para Windows', linux: 'Baixar para Linux' };
+      var note = document.getElementById('osNote');
+      var card = os && document.getElementById('dl-' + os);
+      if (card) card.setAttribute('data-current', 'true');
+
+      if (os === 'windows' || os === 'linux') {
+        document.getElementById('primaryLabel').textContent = labels[os];
+        note.innerHTML = 'Detectamos ' + (os === 'windows' ? 'Windows' : 'Linux') +
+          '. <a href="#download">Outro sistema?</a>';
+      } else if (os === 'macos') {
+        note.innerHTML = 'macOS ainda não tem build. <a href="#download">Ver Windows e Linux</a>';
+      } else {
+        note.innerHTML = 'Escolha seu sistema na <a href="#download">lista de downloads</a>.';
+      }
+
+      // ---- nav sticky state ----
+      var nav = document.getElementById('nav');
+      var onScroll = function () { nav.setAttribute('data-stuck', String(window.scrollY > 8)); };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // ---- reveal on scroll ----
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+</body>
+</html>
